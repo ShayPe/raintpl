@@ -172,7 +172,10 @@ class RainTPL{
 
         if( !$this->cache && !$return_string ){
             extract( $this->var );
-            include $this->tpl['compiled_filename'];
+		   if(self::CACHE_EXPIRE_TIME>0) 
+		    include $this->tpl['compiled_filename']; 
+		   else 
+		    eval('?>'.$this->tpl['compiled_string'].'<?');
             unset( $this->tpl );
         }
 
@@ -187,7 +190,10 @@ class RainTPL{
             //----------------------
                 ob_start();
                 extract( $this->var );
-                include $this->tpl['compiled_filename'];
+		   if(self::CACHE_EXPIRE_TIME>0) 
+		    include $this->tpl['compiled_filename']; 
+		   else 
+		    eval('?>'.$this->tpl['compiled_string'].'<?');
                 $raintpl_contents = ob_get_clean();
             //----------------------
 
@@ -314,14 +320,17 @@ class RainTPL{
 		$template_compiled = str_replace( "?>\n", "?>\n\n", $template_compiled );
 
 		// create directories
-		if( !is_dir( $cache_dir ) )
+		if( !is_dir( $cache_dir ) && self::CACHE_EXPIRE_TIME>0)
 			mkdir( $cache_dir, 0755, true );
 
-		if( !is_writable( $cache_dir ) )
+		if( !is_writable( $cache_dir ) && self::CACHE_EXPIRE_TIME>0)
 			throw new RainTpl_Exception ('Cache directory ' . $cache_dir . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
 
 		//write compiled file
-		file_put_contents( $compiled_filename, $template_compiled );
+		   if(self::CACHE_EXPIRE_TIME>0) 
+			file_put_contents( $compiled_filename, $template_compiled );
+		   else
+		   	$this->tpl['compiled_string']=$template_compiled;
 	}
 
 
